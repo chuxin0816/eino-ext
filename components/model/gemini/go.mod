@@ -1,4 +1,4 @@
-module github.com/cloudwego/eino-ext/components/model/gemini
+module github.com/chuxin0816/eino-ext/components/model/gemini
 
 go 1.23
 

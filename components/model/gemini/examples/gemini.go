@@ -28,7 +28,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"google.golang.org/genai"
 
-	"github.com/cloudwego/eino-ext/components/model/gemini"
+	"github.com/chuxin0816/eino-ext/components/model/gemini"
 )
 
 func main() {
