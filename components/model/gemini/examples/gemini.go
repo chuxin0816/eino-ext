@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -53,6 +54,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("NewChatModel of gemini failed, err=%v", err)
 	}
+
+	var tools []*schema.ToolInfo
+	json.Unmarshal([]byte(`[{"Name":"activityInfo","Desc":"Get activity info"},{"Name":"checkActivityAndFeatureResource","Desc":"Check the resource information of the activity and its gameplays"},{"Name":"checkUserPKTimeConflictByActivityID","Desc":"Check whether the user's PK time in the activity conflicts, return the conflict pk pairs of each user"},{"Name":"checkUserPkTimeConflictByMeasureIDs","Desc":"Check whether the user's PK time in the measures conflicts, return the conflict pk pairs of each user"},{"Name":"formatTimestamp","Desc":"Batch convert timestamps to the time of the activity timezone"}]`), &tools)
+	cm.BindTools(tools)
 
 	fmt.Println("\n=== Basic Chat ===")
 	basicChat(ctx, cm)
@@ -111,6 +116,23 @@ func streamingChat(ctx context.Context, cm model.ChatModel) {
 func functionCalling(ctx context.Context, cm model.ChatModel) {
 	err := cm.BindTools([]*schema.ToolInfo{
 		{
+			Name: "get_news",
+			Desc: "Get latest news",
+			ParamsOneOf: schema.NewParamsOneOfByOpenAPIV3(
+				&openapi3.Schema{
+					Type: "object",
+					Properties: map[string]*openapi3.SchemaRef{
+						"category": {
+							Value: &openapi3.Schema{
+								Type:        "string",
+								Description: "The category of the news",
+							},
+						},
+					},
+				},
+			),
+		},
+		{
 			Name: "get_weather",
 			Desc: "Get current weather information for a city",
 			ParamsOneOf: schema.NewParamsOneOfByOpenAPIV3(
@@ -136,7 +158,7 @@ func functionCalling(ctx context.Context, cm model.ChatModel) {
 	resp, err := cm.Generate(ctx, []*schema.Message{
 		{
 			Role:    schema.User,
-			Content: "What's the weather like in Paris today?",
+			Content: "What function do you have?",
 		},
 	})
 	if err != nil {
